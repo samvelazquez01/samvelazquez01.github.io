@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SV Soft - Sistema de Contabilidad</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Chave Medicina</h1>
+        <nav id="mainNav">
+            <button onclick="mostrarSeccion('inventario')">Inventario</button>
+            <button onclick="mostrarSeccion('facturacion')">Facturación</button>
+            <button onclick="mostrarSeccion('cuentasCobrar')">Cuentas por Cobrar</button>
+            <button onclick="mostrarSeccion('cuentasPagar')">Cuentas por Pagar</button>
+            <button onclick="mostrarSeccion('controlCapital')">Control de Capital</button>
+            <button onclick="mostrarSeccion('ingresoGasto')">Ingreso/Gasto</button>
+            <button onclick="mostrarSeccion('compras')">Compras</button>
+            <button onclick="mostrarSeccion('registros')">Registros</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="inventario" class="seccion">
+            <h2>Inventario</h2>
+            <button id="btnAgregarProducto">+ Agregar Producto</button>
+            <form id="formInventario" style="display:none;">
+                <input type="text" id="nombreProducto" placeholder="Nombre del producto" required>
+                <input type="text" id="codigoProducto" placeholder="Código del producto" required>
+                <input type="number" id="precioCompra" placeholder="Precio de compra" required step="0.01">
+                <input type="number" id="precioVenta" placeholder="Precio de venta" required step="0.01">
+                <input type="number" id="cantidadInventario" placeholder="Cantidad en inventario" required>
+                <input type="number" id="cantidadMinima" placeholder="Cantidad mínima" required>
+                <input type="text" id="etiquetaProducto" placeholder="Etiqueta del producto">
+                <input type="date" id="fechaVencimiento" placeholder="Fecha de vencimiento (opcional)">
+                <button type="submit" id="btnGuardarProducto">Guardar Producto</button>
+                <button type="button" id="btnCancelarEdicion" style="display:none;">Cancelar Edición</button>
+            </form>
+            <input type="text" id="buscarProducto" placeholder="Buscar producto (nombre, código o etiqueta)">
+            <select id="ordenarProductos">
+                <option value="alfabetico">Ordenar alfabéticamente</option>
+                <option value="vencimiento">Ordenar por fecha de vencimiento</option>
+            </select>
+            <div class="table-container">
+                <table id="tablaInventario">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Código</th>
+                            <th>Precio Compra</th>
+                            <th>Precio Venta</th>
+                            <th>Cantidad</th>
+                            <th>Mínimo</th>
+                            <th>Etiqueta</th>
+                            <th>Vencimiento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaInventario"></tbody>
+                </table>
+            </div>
+            <input type="file" id="importarExcel" accept=".xlsx, .xls">
+            <button onclick="importarDesdeExcel()">Importar desde Excel</button>
+        </section>
+
+        <section id="facturacion" class="seccion" style="display:none;">
+            <h2>Facturación</h2>
+            <form id="formFactura">
+                <input type="text" id="clienteFactura" placeholder="Nombre del cliente" required>
+                <input type="text" id="fechaFactura" readonly>
+                <input type="text" id="buscarProductoFactura" placeholder="Buscar producto para factura">
+                <select id="productoSeleccionado"></select>
+                <input type="number" id="cantidadFactura" placeholder="Cantidad" min="1" required>
+                <input type="number" id="precioFactura" placeholder="Precio" required step="0.01" readonly>
+                <select id="tipoFactura">
+                    <option value="contado">Contado</option>
+                    <option value="credito">Crédito</option>
+                </select>
+                <button type="button" onclick="agregarProductoFactura()">Añadir al carrito</button>
+            </form>
+            <div class="table-container">
+                <table id="tablaFactura">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Subtotal</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaFactura"></tbody>
+                </table>
+            </div>
+            <p>Total: <span id="totalFactura">0</span></p>
+            <button type="button" onclick="finalizarFactura()">Finalizar Factura</button>
+            <button onclick="imprimirFactura()">Imprimir Factura</button>
+        </section>
+
+        <section id="cuentasCobrar" class="seccion" style="display:none;">
+            <h2>Cuentas por Cobrar</h2>
+            <input type="text" id="buscarDeudor" placeholder="Buscar deudor">
+            <div class="table-container">
+                <table id="tablaCuentasCobrar">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaCuentasCobrar"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="cuentasPagar" class="seccion" style="display:none;">
+            <h2>Cuentas por Pagar</h2>
+            <input type="text" id="buscarAcreedor" placeholder="Buscar acreedor">
+            <div class="table-container">
+                <table id="tablaCuentasPagar">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Acreedor</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaCuentasPagar"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="controlCapital" class="seccion" style="display:none;">
+            <h2>Control de Capital</h2>
+            <p>Capital en Productos: <span id="capitalProductos">0</span></p>
+            <p>Capital en Efectivo: <span id="capitalEfectivo">0</span></p>
+            <p>Capital Total: <span id="capitalTotal">0</span></p>
+            <form id="formCapital">
+                <input type="number" id="montoCapital" placeholder="Monto" required step="0.01">
+                <input type="text" id="descripcionCapital" placeholder="Descripción" required>
+                <button type="submit">Añadir al Capital</button>
+            </form>
+            <button onclick="anadirGananciasCapital()">Añadir Ganancias al Capital</button>
+            <input type="number" id="montoGananciasCapital" placeholder="Monto de ganancias a añadir" step="0.01">
+            <button onclick="restarCapital()">Restar del Capital</button>
+            <input type="number" id="montoRestarCapital" placeholder="Monto a restar del capital" step="0.01">
+        </section>
+
+        <section id="ingresoGasto" class="seccion" style="display:none;">
+            <h2>Registro de Ingreso/Gasto</h2>
+            <form id="formIngresoGasto">
+                <select id="tipoMovimiento">
+                    <option value="ingreso">Ingreso</option>
+                    <option value="gasto">Gasto</option>
+                </select>
+                <input type="number" id="montoMovimiento" placeholder="Monto" required step="0.01">
+                <input type="text" id="descripcionMovimiento" placeholder="Descripción" required>
+                <input type="text" id="etiquetaMovimiento" placeholder="Etiqueta">
+                <button type="submit">Registrar</button>
+            </form>
+            <h3>Ganancias Totales: <span id="gananciasTotal">0</span></h3>
+            <input type="date" id="fechaInicioGanancias">
+            <input type="date" id="fechaFinGanancias">
+            <button onclick="buscarGananciasPorFecha()">Buscar Ganancias</button>
+        </section>
+
+        <section id="compras" class="seccion" style="display:none;">
+            <h2>Registro de Compras</h2>
+            <form id="formCompra">
+                <input type="text" id="proveedorCompra" placeholder="Proveedor" required>
+                <input type="text" id="fechaCompra" readonly>
+                <select id="tipoCompra">
+                    <option value="contado">Contado</option>
+                    <option value="credito">Crédito</option>
+                </select>
+                <input type="text" id="buscarProductoCompra" placeholder="Buscar producto para compra">
+                <select id="productoCompraSeleccionado"></select>
+                <input type="number" id="cantidadCompra" placeholder="Cantidad" min="1" required>
+                <input type="number" id="precioCompraProducto" placeholder="Precio de compra" required step="0.01">
+                <button type="button" onclick="agregarProductoCompra()">Añadir Producto</button>
+                <button type="button" onclick="mostrarFormNuevoProducto()">Añadir Nuevo Producto</button>
+            </form>
+            <form id="formNuevoProductoCompra" style="display:none;">
+                <input type="text" id="nombreNuevoProducto" placeholder="Nombre del nuevo producto" required>
+                <input type="text" id="codigoNuevoProducto" placeholder="Código del nuevo producto" required>
+                <input type="number" id="precioCompraNuevoProducto" placeholder="Precio de compra" required step="0.01">
+                <input type="number" id="precioVentaNuevoProducto" placeholder="Precio de venta" required step="0.01">
+                <input type="number" id="cantidadNuevoProducto" placeholder="Cantidad" required min="1">
+                <input type="number" id="cantidadMinimaNuevoProducto" placeholder="Cantidad mínima" required min="1">
+                <input type="text" id="etiquetaNuevoProducto" placeholder="Etiqueta del producto">
+                <input type="date" id="fechaVencimientoNuevoProducto">
+                <button type="button" onclick="agregarNuevoProductoCompra()">Agregar Nuevo Producto</button>
+            </form>
+            <div class="table-container">
+                <table id="tablaCompra">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Subtotal</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaCompra"></tbody>
+                </table>
+            </div>
+            <p>Total: <span id="totalCompra">0</span></p>
+            <button onclick="finalizarCompra()">Finalizar Compra</button>
+        </section>
+
+        <section id="registros" class="seccion" style="display:none;">
+            <h2>Registros</h2>
+            <select id="tipoRegistro">
+                <option value="facturas">Facturas</option>
+                <option value="ingresos">Ingresos</option>
+                <option value="gastos">Gastos</option>
+                <option value="compras">Compras</option>
+            </select>
+            <input type="text" id="buscarRegistro" placeholder="Buscar en registros">
+            <div class="table-container">
+                <table id="tablaRegistros">
+                    <thead id="encabezadoRegistros"></thead>
+                    <tbody id="cuerpoTablaRegistros"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
+
